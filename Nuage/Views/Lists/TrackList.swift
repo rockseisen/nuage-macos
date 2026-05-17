@@ -48,7 +48,19 @@ extension TrackList where Element == Track {
         }
         self.init(for: ids, page: page)
     }
-    
+
+    init(playlist: AnyPlaylist) {
+        if let ids = playlist.trackIDs, !ids.isEmpty {
+            let arr = Just(ids).setFailureType(to: Error.self).eraseToAnyPublisher()
+            self.init(for: arr) { SoundCloud.shared.get(.tracks($0)) }
+            return
+        }
+        switch playlist {
+        case .user(let p): self.init(request: .userPlaylist(p.id))
+        case .system(let p): self.init(request: .systemPlaylist(p.urn))
+        }
+    }
+
 }
 
 extension TrackList where Element == Like<Track> {

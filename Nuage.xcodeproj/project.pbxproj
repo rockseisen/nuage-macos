@@ -39,6 +39,7 @@
 		4988D84625A1C62E0092BAFF /* UserDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4988D84525A1C62E0092BAFF /* UserDetail.swift */; };
 		498C72F32A790AF300AA1AAF /* StatsStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498C72F22A790AF300AA1AAF /* StatsStack.swift */; };
 		4998E12125CADC8300EB986F /* Artwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4998E12025CADC8300EB986F /* Artwork.swift */; };
+		D15C0BE100000001000000DC /* DiscoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15C0BE200000001000000DC /* DiscoverView.swift */; };
 		4999998D25B0886700F42D9B /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4999998C25B0886700F42D9B /* WaveformView.swift */; };
 		49A89C032A5EA1B70019648F /* Likes.json in Resources */ = {isa = PBXBuildFile; fileRef = 49A89C022A5EA12D0019648F /* Likes.json */; };
 		49A99D7A2A7454EE001B8BCB /* Navigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A99D792A7454EE001B8BCB /* Navigation.swift */; };
@@ -85,6 +86,7 @@
 		4988D84525A1C62E0092BAFF /* UserDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDetail.swift; sourceTree = "<group>"; };
 		498C72F22A790AF300AA1AAF /* StatsStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsStack.swift; sourceTree = "<group>"; };
 		4998E12025CADC8300EB986F /* Artwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Artwork.swift; sourceTree = "<group>"; };
+		D15C0BE200000001000000DC /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 		4999998C25B0886700F42D9B /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
 		49A89C022A5EA12D0019648F /* Likes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Likes.json; sourceTree = "<group>"; };
 		49A99D792A7454EE001B8BCB /* Navigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Navigation.swift; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 				4969F41C257CFB100048E29B /* UserGrid.swift */,
 				49E6259C25BE1E7E005BEF8C /* WebView.swift */,
 				4998E12025CADC8300EB986F /* Artwork.swift */,
+				D15C0BE200000001000000DC /* DiscoverView.swift */,
 				493AB3542A6E668C00E20656 /* FeedbackStack.swift */,
 				498C72F22A790AF300AA1AAF /* StatsStack.swift */,
 				49FEEBDE2A5B56C9002C8865 /* TouchBar.swift */,
@@ -351,6 +354,7 @@
 				4969F3C9257CFA7F0048E29B /* NuageApp.swift in Sources */,
 				4969F436257CFB100048E29B /* MainView.swift in Sources */,
 				4998E12125CADC8300EB986F /* Artwork.swift in Sources */,
+				D15C0BE100000001000000DC /* DiscoverView.swift in Sources */,
 				4969F428257CFB100048E29B /* Helpers.swift in Sources */,
 				49FA14C62589693E00CEF925 /* InfiniteList.swift in Sources */,
 				490857292A718FFF002D4FD0 /* PostRow.swift in Sources */,

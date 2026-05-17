@@ -41,6 +41,10 @@ struct MainView: View {
                         .navigationDestinationWithPlaybackContext(for: Track.self) { TrackDetail(track: $0) }
                         .navigationDestination(for: User.self) { UserDetail(user: $0) }
                         .navigationDestination(for: URL.self) { URLDetail(url: $0) }
+                        .navigationDestination(for: AnyPlaylist.self) { playlist in
+                            TrackList(playlist: playlist)
+                                .navigationTitle(playlist.title)
+                        }
                         .navigationDestination(for: Station.self) { station in
                             switch station {
                             case .track(let track): TrackList(request: .trackStation(basedOn: track))
@@ -83,6 +87,7 @@ struct MainView: View {
     
     @ViewBuilder private func sidebar() -> some View {
         List(selection: $sidebarSelection) {
+            sidebarMenu(for: .discover)
             sidebarMenu(for: .stream)
             sidebarMenu(for: .likes)
             sidebarMenu(for: .history)
@@ -122,6 +127,8 @@ struct MainView: View {
     @ViewBuilder private func root(for item: SidebarItem) -> some View {
         Group {
             switch item {
+            case .discover:
+                DiscoverView()
             case .stream:
                 let stream = SoundCloud.shared.get(.stream(), count: 50)
                 PostList(for: stream)
