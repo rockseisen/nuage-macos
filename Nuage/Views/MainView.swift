@@ -67,6 +67,10 @@ struct MainView: View {
         .toolbarRole(.editor)
         .toolbar(content: toolbar)
         .touchBar { TouchBar() }
+        .onChange(of: sidebarSelection) { _ in
+            navigationPath = NavigationPath()
+            blockingNavigationPath = nil
+        }
         .onOpenURL { url in
             guard var components = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return }
             
