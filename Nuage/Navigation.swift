@@ -11,15 +11,17 @@ private let userPlaylistSeparator = "@@USERPLAYLIST@@"
 private let systemPlaylistSeparator = "@@SYSTEMPLAYLIST@@"
 
 enum SidebarItem: RawRepresentable {
+    case discover
     case stream
     case likes
     case history
     case following
     case userPlaylist(String, String)
     case systemPlaylist(String, String)
-    
+
     init?(rawValue: String) {
         switch rawValue {
+        case "discover": self = .discover
         case "stream": self = .stream
         case "likes": self = .likes
         case "history": self = .history
@@ -42,6 +44,7 @@ enum SidebarItem: RawRepresentable {
     
     var rawValue: String {
         switch self {
+        case .discover: return "discover"
         case .stream: return "stream"
         case .likes: return "likes"
         case .history: return "history"
@@ -61,6 +64,7 @@ enum SidebarItem: RawRepresentable {
     
     var imageName: String? {
         switch self {
+        case .discover: return "sparkles"
         case .stream: return "bolt.horizontal.fill"
         case .likes: return "heart.fill"
         case .history: return "clock.fill"

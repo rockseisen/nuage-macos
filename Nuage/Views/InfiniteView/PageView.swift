@@ -64,15 +64,10 @@ struct PageView<Element: Decodable&Identifiable, ContentView: View>: View {
     }
     
     private func getNextPage() {
-        guard subscriptions[elements.count] == nil else { return }
+        guard subscriptions[elements.count] == nil,
+              let lastPage = pages?.last else { return }
 
-        let currentPagePublisher = (pages ?? []).publisher
-            .last()
-            .mapError { $0 as Error }
-
-        publisher.merge(with: currentPagePublisher)
-            .first()
-            .flatMap { SoundCloud.shared.get(next: $0) }
+        SoundCloud.shared.get(next: lastPage)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { _ in }, receiveValue: { page in
                 pages?.append(page)
