@@ -22,8 +22,8 @@ Note that Nuage is not affiliated in any way to SoundCloud. Nuage uses private A
 ## Installation
 
 You can install Nuage using brew:
-```console
-brew install --cask nuage
+```bash
+brew install lbrndnr/tap/nuage
 ```
 or by downloading the latest version right [here](https://github.com/lbrndnr/nuage-macos/releases). Note that Nuage is still in heavy development and on top of that written in SwiftUI, a very young framework. If you encounter a bug or miss a feature, don't hesitate to open a pull request.
 
