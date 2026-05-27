@@ -29,8 +29,8 @@ struct UserDetail: View {
                         .lineLimit(1)
                     
                     HStack {
-                        Text("\(currentUser.followerCount ?? 0) Followers")
-                        Text("\(currentUser.followingCount ?? 0) Following")
+                        Text("\(format(count: currentUser.followerCount ?? 0)) Followers")
+                        Text("\(format(count: currentUser.followingCount ?? 0)) Following")
                     }
                     
                     if let description = currentUser.description {

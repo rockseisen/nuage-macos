@@ -57,13 +57,13 @@ struct UserItem: View {
                 .lineLimit(1)
             
             HStack(spacing: 2) {
-                Text(String(user.followerCount ?? 0))
+                Text(format(count: user.followerCount ?? 0))
                 Image(systemName: "person.2.fill")
                 
                 Spacer()
                     .frame(width: 8)
                 
-                Text(String(user.trackCount ?? 0))
+                Text(format(count: user.trackCount ?? 0))
                 Image(systemName: "waveform")
             }
             .foregroundColor(.secondary)

@@ -15,17 +15,17 @@ struct StatsStack: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: "play.fill")
-            Text(String(track.playbackCount))
+            Text(format(count: track.playbackCount))
             
             Spacer().frame(width: 2)
             
             Image(systemName: "heart.fill")
-            Text(String(track.likeCount))
+            Text(format(count: track.likeCount))
             
             Spacer().frame(width: 2)
             
             Image(systemName: "arrow.triangle.2.circlepath")
-            Text(String(track.repostCount))
+            Text(format(count: track.repostCount))
         }
     }
     
