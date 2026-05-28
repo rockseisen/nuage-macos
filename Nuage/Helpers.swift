@@ -35,6 +35,29 @@ func format<Time: BinaryFloatingPoint>(time: Time) -> String {
 //    return text
 }
 
+private var countFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal
+    formatter.maximumFractionDigits = 1
+    formatter.usesGroupingSeparator = false
+
+    return formatter
+}()
+
+func format(count: Int) -> String {
+    if count < 1_000 { return String(count) }
+
+    let value = Double(count)
+    let (scaled, suffix): (Double, String)
+    switch value {
+    case 1_000_000_000...: (scaled, suffix) = (value / 1_000_000_000, "B")
+    case 1_000_000...:     (scaled, suffix) = (value / 1_000_000, "M")
+    default:               (scaled, suffix) = (value / 1_000, "K")
+    }
+
+    return (countFormatter.string(from: NSNumber(value: scaled)) ?? String(count)) + suffix
+}
+
 extension AnyCancellable {
     
     func store<T: Hashable>(in dictionary: inout Dictionary<T, AnyCancellable>, key: T) {

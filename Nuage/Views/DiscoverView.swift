@@ -122,7 +122,7 @@ private struct UserCard: View {
                     .multilineTextAlignment(.leading)
                 if let followers = user.followerCount {
                     HStack(spacing: 2) {
-                        Text(String(followers))
+                        Text(format(count: followers))
                         Image(systemName: "person.2.fill")
                     }
                     .font(.caption)
