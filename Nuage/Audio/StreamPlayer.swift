@@ -184,8 +184,30 @@ class StreamPlayer: ObservableObject {
         self.player.play()
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.advanceForward), name: Notification.Name.AVPlayerItemDidPlayToEndTime, object: item)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handlePlaybackError), name: Notification.Name.AVPlayerItemFailedToPlayToEndTime, object: item)
+        
+        // Observe item status to detect playback failures (e.g. licensing restrictions)
+        item.publisher(for: \.status)
+            .filter { $0 == .failed }
+            .first()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self,
+                      let idx = self.currentStreamIndex else { return }
+                let track = self.queue[self.queueOrder[idx]]
+                self.preloadManager.markUnplayable(track)
+                self.skipToNextPlayable(from: idx)
+            }
+            .store(in: &subscriptions)
         
         self.updateNowPlayingInfo()
+    }
+    
+    @objc private func handlePlaybackError() {
+        guard let idx = currentStreamIndex else { return }
+        let track = queue[queueOrder[idx]]
+        preloadManager.markUnplayable(track)
+        skipToNextPlayable(from: idx)
     }
     
     private func skipToNextPlayable(from index: Int) {

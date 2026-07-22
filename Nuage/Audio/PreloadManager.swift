@@ -53,12 +53,13 @@ class PreloadManager {
                     self.preloadSubscriptions.removeValue(forKey: track.id)
                 }, receiveValue: { [weak self] asset in
                     guard let self = self else { return }
-                    // Validate the asset is playable
-                    asset.loadValuesAsynchronously(forKeys: ["playable"]) {
+                    // Validate the asset is actually loadable
+                    asset.loadValuesAsynchronously(forKeys: ["playable", "tracks"]) {
                         var error: NSError?
-                        let status = asset.statusOfValue(forKey: "playable", error: &error)
+                        let playableStatus = asset.statusOfValue(forKey: "playable", error: &error)
+                        let tracksStatus = asset.statusOfValue(forKey: "tracks", error: &error)
                         DispatchQueue.main.async {
-                            if status == .loaded && asset.isPlayable {
+                            if playableStatus == .loaded && tracksStatus == .loaded && asset.isPlayable {
                                 self.cachedAssets[track.id] = asset
                             } else {
                                 self.unplayableTracks.insert(track.id)
