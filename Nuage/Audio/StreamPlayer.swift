@@ -43,6 +43,8 @@ class StreamPlayer: ObservableObject {
     
     @Published private(set) var currentStream: Track?
     
+    private var playbackHistory = [Int]()
+    
     @AppStorage("shuffleQueue") var shuffleQueue: Bool = false {
         didSet {
             // Here we have to unravel the index again
@@ -261,6 +263,7 @@ class StreamPlayer: ObservableObject {
         
         pause()
         preloadManager.reset()
+        playbackHistory.removeAll()
         queue = tracks
         
         // If we're in shuffle mode, we first have to unravel `idx`
@@ -272,6 +275,10 @@ class StreamPlayer: ObservableObject {
     @objc func advanceForward() {
         guard let idx = currentStreamIndex else { return }
         player.replaceCurrentItem(with: nil)
+        
+        // Record current track in history before moving forward
+        playbackHistory.append(idx)
+        
         if queue.count > idx + 1 {
             resume(from: idx + 1)
         }
@@ -289,8 +296,14 @@ class StreamPlayer: ObservableObject {
         
         if player.currentTime() < CMTime(value: 15, timescale: 1) {
             player.replaceCurrentItem(with: nil)
-            if idx > 0 {
-                resume(from: idx - 1)
+            
+            // Try playback history first (go back to what actually played)
+            if let previousIdx = popPreviousPlayable() {
+                resume(from: previousIdx)
+            }
+            // Fall back to scanning backward through the queue
+            else if idx > 0 {
+                skipToPreviousPlayable(from: idx)
             }
             else {
                 currentStreamIndex = nil
@@ -299,6 +312,32 @@ class StreamPlayer: ObservableObject {
         else {
             restartPlayback()
         }
+    }
+    
+    private func popPreviousPlayable() -> Int? {
+        while let previousIdx = playbackHistory.popLast() {
+            guard previousIdx < queueOrder.count else { continue }
+            let track = queue[queueOrder[previousIdx]]
+            if !preloadManager.isUnplayable(track) {
+                return previousIdx
+            }
+        }
+        return nil
+    }
+    
+    private func skipToPreviousPlayable(from index: Int) {
+        var prevIdx = index - 1
+        while prevIdx >= 0 {
+            let track = queue[queueOrder[prevIdx]]
+            if !preloadManager.isUnplayable(track) {
+                resume(from: prevIdx)
+                return
+            }
+            prevIdx -= 1
+        }
+        
+        // No playable track found behind us
+        currentStreamIndex = nil
     }
     
     func seekForward() {
@@ -313,6 +352,7 @@ class StreamPlayer: ObservableObject {
         pause()
         player.replaceCurrentItem(with: nil)
         preloadManager.reset()
+        playbackHistory.removeAll()
         queue = []
         currentStreamIndex = nil
     }
