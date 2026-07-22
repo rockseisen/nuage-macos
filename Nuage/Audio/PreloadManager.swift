@@ -13,6 +13,7 @@ import SoundCloud
 class PreloadManager {
     
     private let lookahead = 15
+    private let lookbehind = 5
     private let timeout: Int = 10
     
     private var cachedAssets = [String: AVURLAsset]()
@@ -31,14 +32,21 @@ class PreloadManager {
         let upcomingIndices = (startIndex..<endIndex)
         let upcomingTracks = upcomingIndices.map { queue[queueOrder[$0]] }
         
-        // Cancel preloads for tracks no longer in the lookahead window
-        let upcomingIDs = Set(upcomingTracks.map { $0.id })
-        for id in preloadSubscriptions.keys where !upcomingIDs.contains(id) {
-            preloadSubscriptions[id]?.cancel()
-            preloadSubscriptions.removeValue(forKey: id)
-        }
+        preloadTracks(upcomingTracks)
+    }
+    
+    func preloadBackward(queue: [Track], queueOrder: [Int], from currentIndex: Int) {
+        guard currentIndex > 0 else { return }
         
-        for track in upcomingTracks {
+        let startIndex = max(currentIndex - lookbehind, 0)
+        let behindIndices = (startIndex..<currentIndex)
+        let behindTracks = behindIndices.map { queue[queueOrder[$0]] }
+        
+        preloadTracks(behindTracks)
+    }
+    
+    private func preloadTracks(_ tracks: [Track]) {
+        for track in tracks {
             guard !unplayableTracks.contains(track.id),
                   cachedAssets[track.id] == nil,
                   preloadSubscriptions[track.id] == nil else { continue }
@@ -89,8 +97,9 @@ class PreloadManager {
     // MARK: - Cleanup
     
     func evict(before index: Int, queue: [Track], queueOrder: [Int]) {
-        guard index > 0 else { return }
-        let pastIndices = (0..<index)
+        guard index > lookbehind else { return }
+        let evictEnd = index - lookbehind
+        let pastIndices = (0..<evictEnd)
         let pastIDs = Set(pastIndices.map { queue[queueOrder[$0]].id })
         
         for id in pastIDs {

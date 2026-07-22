@@ -246,9 +246,11 @@ class StreamPlayer: ObservableObject {
     
     private func triggerPreload(from index: Int) {
         let nextIndex = index + 1
-        guard nextIndex < queue.count else { return }
+        if nextIndex < queue.count {
+            preloadManager.preload(queue: queue, queueOrder: queueOrder, from: nextIndex)
+        }
+        preloadManager.preloadBackward(queue: queue, queueOrder: queueOrder, from: index)
         preloadManager.evict(before: index, queue: queue, queueOrder: queueOrder)
-        preloadManager.preload(queue: queue, queueOrder: queueOrder, from: nextIndex)
     }
     
     func pause() {
