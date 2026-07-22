@@ -69,18 +69,9 @@ class StreamPlayer: ObservableObject {
         }
     }
     
-    private var shouldSeek = true
-    @Published var progress: TimeInterval = 0.0 {
-        didSet {
-            if shouldSeek {
-                let time = CMTime(seconds: progress, preferredTimescale: 1)
-                player.seek(to: time)
-                updateNowPlayingInfo(with: time)
-            }
-        }
-    }
+    let playbackState = PlaybackState()
     
-    @Published private(set) var isPlaying = false
+    var isPlaying: Bool { playbackState.isPlaying }
     
     // MARK: - Initialization
     
@@ -93,18 +84,10 @@ class StreamPlayer: ObservableObject {
             self.volume = defaults.float(forKey: volumeKey)
         }
         
-        let interval = CMTime(value: 1, timescale: 1)
-        player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            guard let self = self else { return }
-            self.shouldSeek = false
-            self.progress = time.seconds
-            self.shouldSeek = true
+        playbackState.attach(to: player)
+        playbackState.onSeek = { [weak self] time in
+            self?.updateNowPlayingInfo(with: time)
         }
-        
-        player.publisher(for: \.timeControlStatus)
-            .map { $0 != .paused }
-            .assign(to: \.isPlaying, on: self)
-            .store(in: &subscriptions)
         
         player.publisher(for: \.timeControlStatus)
             .sink { _ in self.updateNowPlayingInfo() }
@@ -125,7 +108,7 @@ class StreamPlayer: ObservableObject {
     }
     
     func togglePlayback() {
-        if isPlaying {
+        if playbackState.isPlaying {
             pause()
         }
         else {
@@ -148,9 +131,7 @@ class StreamPlayer: ObservableObject {
             }
             
             self.currentStreamIndex = idx
-            self.shouldSeek = false
-            self.progress = 0
-            self.shouldSeek = true
+            self.playbackState.resetProgress()
             
             let track = currentStream!
             
@@ -302,11 +283,11 @@ class StreamPlayer: ObservableObject {
     }
     
     func seekForward() {
-        progress += 15
+        playbackState.progress += 15
     }
     
     func seekBackward() {
-        progress -= 15
+        playbackState.progress -= 15
     }
     
     func reset() {
@@ -372,7 +353,7 @@ class StreamPlayer: ObservableObject {
             guard let event = event as? MPChangePlaybackPositionCommandEvent else {
                 return .commandFailed
             }
-            self.progress = event.positionTime
+            self.playbackState.progress = event.positionTime
             return .success
         }
     }

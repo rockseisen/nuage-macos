@@ -50,6 +50,7 @@
 		49FA14C62589693E00CEF925 /* InfiniteList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FA14C52589693E00CEF925 /* InfiniteList.swift */; };
 		49FEEBDF2A5B56C9002C8865 /* TouchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FEEBDE2A5B56C9002C8865 /* TouchBar.swift */; };
 		7C7EF3C73011578F0019A005 /* PreloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C7EF3C63011578F0019A005 /* PreloadManager.swift */; };
+		7C7EF3C9301161120019A005 /* PlaybackState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C7EF3C8301161120019A005 /* PlaybackState.swift */; };
 		D15C0BE100000001000000DC /* DiscoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15C0BE200000001000000DC /* DiscoverView.swift */; };
 /* End PBXBuildFile section */
 
@@ -97,6 +98,7 @@
 		49FA14C52589693E00CEF925 /* InfiniteList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfiniteList.swift; sourceTree = "<group>"; };
 		49FEEBDE2A5B56C9002C8865 /* TouchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBar.swift; sourceTree = "<group>"; };
 		7C7EF3C63011578F0019A005 /* PreloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreloadManager.swift; sourceTree = "<group>"; };
+		7C7EF3C8301161120019A005 /* PlaybackState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackState.swift; sourceTree = "<group>"; };
 		D15C0BE200000001000000DC /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -203,6 +205,7 @@
 		4969F40D257CFB100048E29B /* Audio */ = {
 			isa = PBXGroup;
 			children = (
+				7C7EF3C8301161120019A005 /* PlaybackState.swift */,
 				7C7EF3C63011578F0019A005 /* PreloadManager.swift */,
 				4969F40E257CFB100048E29B /* Stream.swift */,
 				4969F40F257CFB100048E29B /* StreamPlayer.swift */,
@@ -351,6 +354,7 @@
 				4999998D25B0886700F42D9B /* WaveformView.swift in Sources */,
 				49332BAE25961A3B0034A161 /* PlaylistRow.swift in Sources */,
 				498C72F32A790AF300AA1AAF /* StatsStack.swift in Sources */,
+				7C7EF3C9301161120019A005 /* PlaybackState.swift in Sources */,
 				4969F41E257CFB100048E29B /* Preview.swift in Sources */,
 				4980FD2325CD6333004640D5 /* InfiniteGrid.swift in Sources */,
 				4964297B25DFCF04008AFBD5 /* CommentList.swift in Sources */,

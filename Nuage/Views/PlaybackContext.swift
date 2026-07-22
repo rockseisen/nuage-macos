@@ -57,6 +57,12 @@ private struct PlaybackContextKey: EnvironmentKey {
     
 }
 
+struct PlayerReferenceKey: EnvironmentKey {
+    
+    static let defaultValue: StreamPlayer? = nil
+    
+}
+
 extension EnvironmentValues {
     
     var playbackContext: [AnyHashable] {
@@ -69,6 +75,11 @@ extension EnvironmentValues {
         set { self[OnPlayKey.self] = newValue }
     }
     
+    var playerReference: StreamPlayer? {
+        get { self[PlayerReferenceKey.self] }
+        set { self[PlayerReferenceKey.self] = newValue }
+    }
+    
 }
 
 private struct PlaybackStart<T: SoundCloudIdentifiable>: ViewModifier {
@@ -77,7 +88,7 @@ private struct PlaybackStart<T: SoundCloudIdentifiable>: ViewModifier {
     var transform: (T) -> [Track]
     
     @Environment(\.playbackContext) private var playbackContext: [AnyHashable]
-    @EnvironmentObject private var player: StreamPlayer
+    @Environment(\.playerReference) private var player: StreamPlayer?
     
     func body(content: Content) -> some View {
         content
@@ -85,6 +96,7 @@ private struct PlaybackStart<T: SoundCloudIdentifiable>: ViewModifier {
     }
     
     private func onPlay() {
+        guard let player = player else { return }
         createOnPlay(playbackContext: playbackContext, start: element, transform: transform, player: player)()
     }
 

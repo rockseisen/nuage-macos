@@ -21,6 +21,7 @@ struct PlayerView: View {
     @State private var subscriptions = Set<AnyCancellable>()
     
     @EnvironmentObject private var player: StreamPlayer
+    @EnvironmentObject private var playbackState: PlaybackState
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
@@ -93,7 +94,7 @@ struct PlayerView: View {
         let duration = TimeInterval(player.currentStream?.duration ?? 0)
         let font = Font.system(size: 14).monospacedDigit()
         
-        WaveformSlider(url: player.currentStream?.waveformURL, value: $player.progress, in: 0...duration, minValueLabel: { progress in
+        WaveformSlider(url: player.currentStream?.waveformURL, value: $playbackState.progress, in: 0...duration, minValueLabel: { progress in
             Text(format(time: progress))
                 .font(font)
                 .frame(width: 70, alignment: .trailing)
@@ -113,7 +114,7 @@ struct PlayerView: View {
             .buttonStyle(.borderless)
             
             Button(action: player.togglePlayback) {
-                let playStateImageName = player.isPlaying ? "pause.fill" : "play.fill"
+                let playStateImageName = playbackState.isPlaying ? "pause.fill" : "play.fill"
                 resizableImage(name: playStateImageName)
             }
             .buttonStyle(.borderless)
@@ -229,7 +230,9 @@ struct PlayerView_Previews: PreviewProvider {
         let player = StreamPlayer()
         player.enqueue(Preview.tracks)
         
-        return PlayerView(onTrackDetailTap: {}).environmentObject(player)
+        return PlayerView(onTrackDetailTap: {})
+            .environmentObject(player)
+            .environmentObject(player.playbackState)
     }
     
 }

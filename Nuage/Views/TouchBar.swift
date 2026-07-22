@@ -14,6 +14,7 @@ struct TouchBar: View {
     @State private var subscriptions = Set<AnyCancellable>()
     
     @EnvironmentObject private var player: StreamPlayer
+    @EnvironmentObject private var playbackState: PlaybackState
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
@@ -42,7 +43,7 @@ struct TouchBar: View {
         let duration = TimeInterval(player.currentStream?.duration ?? 0)
         let font = Font.system(size: 14).monospacedDigit()
         
-        WaveformSlider(url: track.waveformURL, value: $player.progress, in: 0...duration, minValueLabel: { progress in
+        WaveformSlider(url: track.waveformURL, value: $playbackState.progress, in: 0...duration, minValueLabel: { progress in
             Text(format(time: progress))
                 .font(font)
                 .frame(width: 70, alignment: .trailing)
