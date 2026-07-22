@@ -27,6 +27,8 @@ class StreamPlayer: ObservableObject {
     private var subscriptions = Set<AnyCancellable>()
     
     private var player: AVPlayer
+    private let preloadManager = PreloadManager()
+    
     private(set) var queue = [Track]() {
         didSet {
             reloadQueueOrder()
@@ -139,31 +141,90 @@ class StreamPlayer: ObservableObject {
             player.play()
         }
         else {
+            // Skip tracks known to be unplayable
+            if preloadManager.isUnplayable(newStream) {
+                skipToNextPlayable(from: idx)
+                return
+            }
+            
             self.currentStreamIndex = idx
             self.shouldSeek = false
             self.progress = 0
             self.shouldSeek = true
             
             let track = currentStream!
-            track.prepare()
-                .receive(on: RunLoop.main)
-                .sink(receiveCompletion: { completion in
-                    if case let .failure(error) = completion  {
-                        print("Failed to stream track: \(error)")
-                    }
-                }, receiveValue: { [weak self] asset in
-                    guard let self = self else { return }
-                    
-                    let item = AVPlayerItem(asset: asset)
-                    
-                    self.player.replaceCurrentItem(with: item)
-                    self.player.play()
-                    
-                    NotificationCenter.default.addObserver(self, selector: #selector(self.advanceForward), name: Notification.Name.AVPlayerItemDidPlayToEndTime, object: item)
-                    
-                    self.updateNowPlayingInfo()
-                }).store(in: &subscriptions)
+            
+            // Use preloaded asset if available
+            if let asset = preloadManager.asset(for: track) {
+                self.play(asset: asset)
+            }
+            else {
+                track.prepare()
+                    .receive(on: RunLoop.main)
+                    .sink(receiveCompletion: { [weak self] completion in
+                        guard let self = self else { return }
+                        if case .failure = completion {
+                            self.preloadManager.markUnplayable(track)
+                            self.skipToNextPlayable(from: idx)
+                        }
+                    }, receiveValue: { [weak self] asset in
+                        guard let self = self else { return }
+                        self.play(asset: asset)
+                    }).store(in: &subscriptions)
+            }
         }
+        
+        triggerPreload(from: idx)
+    }
+    
+    private func play(asset: AVURLAsset) {
+        let item = AVPlayerItem(asset: asset)
+        
+        self.player.replaceCurrentItem(with: item)
+        self.player.play()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.advanceForward), name: Notification.Name.AVPlayerItemDidPlayToEndTime, object: item)
+        
+        self.updateNowPlayingInfo()
+    }
+    
+    private func skipToNextPlayable(from index: Int) {
+        player.replaceCurrentItem(with: nil)
+        
+        // Find the next playable track within the queue
+        var nextIdx = index + 1
+        while nextIdx < queueOrder.count {
+            let track = queue[queueOrder[nextIdx]]
+            if !preloadManager.isUnplayable(track) {
+                resume(from: nextIdx)
+                return
+            }
+            nextIdx += 1
+        }
+        
+        // Wrap around if repeat is on
+        if repeatQueue {
+            var wrappedIdx = 0
+            while wrappedIdx < index {
+                let track = queue[queueOrder[wrappedIdx]]
+                if !preloadManager.isUnplayable(track) {
+                    resume(from: wrappedIdx)
+                    return
+                }
+                wrappedIdx += 1
+            }
+        }
+        
+        // No playable tracks found
+        queue = []
+        pause()
+    }
+    
+    private func triggerPreload(from index: Int) {
+        let nextIndex = index + 1
+        guard nextIndex < queue.count else { return }
+        preloadManager.evict(before: index, queue: queue, queueOrder: queueOrder)
+        preloadManager.preload(queue: queue, queueOrder: queueOrder, from: nextIndex)
     }
     
     func pause() {
@@ -177,6 +238,7 @@ class StreamPlayer: ObservableObject {
         }
         
         pause()
+        preloadManager.reset()
         queue = tracks
         
         // If we're in shuffle mode, we first have to unravel `idx`
@@ -228,6 +290,7 @@ class StreamPlayer: ObservableObject {
     func reset() {
         pause()
         player.replaceCurrentItem(with: nil)
+        preloadManager.reset()
         queue = []
         currentStreamIndex = nil
     }
@@ -240,6 +303,10 @@ class StreamPlayer: ObservableObject {
         }
         else {
             queue = queue + streams
+        }
+        
+        if let idx = currentStreamIndex {
+            triggerPreload(from: idx)
         }
     }
     
