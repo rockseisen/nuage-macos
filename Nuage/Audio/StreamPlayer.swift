@@ -160,11 +160,27 @@ class StreamPlayer: ObservableObject {
         triggerPreload(from: idx)
     }
     
+    private var preloadBoundaryObserver: Any?
+    
     private func play(asset: AVURLAsset) {
         let item = AVPlayerItem(asset: asset)
         
         self.player.replaceCurrentItem(with: item)
         self.player.play()
+        
+        // Re-trigger preloading 30s before the track ends to get fresh URLs
+        if let preloadBoundaryObserver = preloadBoundaryObserver {
+            player.removeTimeObserver(preloadBoundaryObserver)
+        }
+        if let track = currentStream {
+            let boundaryTime = max(0, TimeInterval(track.duration) - 30)
+            let time = CMTime(seconds: boundaryTime, preferredTimescale: 1)
+            preloadBoundaryObserver = player.addBoundaryTimeObserver(forTimes: [NSValue(time: time)], queue: .main) { [weak self] in
+                guard let self = self, let idx = self.currentStreamIndex else { return }
+                self.preloadManager.refreshPreload(queue: self.queue, queueOrder: self.queueOrder, from: idx)
+                self.triggerPreload(from: idx)
+            }
+        }
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.advanceForward), name: Notification.Name.AVPlayerItemDidPlayToEndTime, object: item)
         NotificationCenter.default.addObserver(self, selector: #selector(self.handlePlaybackError), name: Notification.Name.AVPlayerItemFailedToPlayToEndTime, object: item)

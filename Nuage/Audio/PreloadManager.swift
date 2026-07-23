@@ -15,8 +15,9 @@ class PreloadManager {
     private let lookahead = 15
     private let lookbehind = 5
     private let timeout: Int = 10
+    private let ttl: TimeInterval = 120
     
-    private var cachedAssets = [String: AVURLAsset]()
+    private var cachedAssets = [String: (asset: AVURLAsset, cachedAt: Date)]()
     private(set) var unplayableTracks = Set<String>()
     
     private var preloadSubscriptions = [String: AnyCancellable]()
@@ -48,8 +49,12 @@ class PreloadManager {
     private func preloadTracks(_ tracks: [Track]) {
         for track in tracks {
             guard !unplayableTracks.contains(track.id),
-                  cachedAssets[track.id] == nil,
                   preloadSubscriptions[track.id] == nil else { continue }
+            
+            // Skip if we already have a valid (non-expired) cached asset
+            if let entry = cachedAssets[track.id], Date().timeIntervalSince(entry.cachedAt) <= ttl {
+                continue
+            }
             
             let subscription = track.prepare()
                 .timeout(.seconds(timeout), scheduler: DispatchQueue.main)
@@ -68,7 +73,7 @@ class PreloadManager {
                         let tracksStatus = asset.statusOfValue(forKey: "tracks", error: &error)
                         DispatchQueue.main.async {
                             if playableStatus == .loaded && tracksStatus == .loaded && asset.isPlayable {
-                                self.cachedAssets[track.id] = asset
+                                self.cachedAssets[track.id] = (asset: asset, cachedAt: Date())
                             } else {
                                 self.unplayableTracks.insert(track.id)
                             }
@@ -83,7 +88,12 @@ class PreloadManager {
     // MARK: - Access
     
     func asset(for track: Track) -> AVURLAsset? {
-        return cachedAssets[track.id]
+        guard let entry = cachedAssets[track.id] else { return nil }
+        if Date().timeIntervalSince(entry.cachedAt) > ttl {
+            cachedAssets.removeValue(forKey: track.id)
+            return nil
+        }
+        return entry.asset
     }
     
     func isUnplayable(_ track: Track) -> Bool {
@@ -95,6 +105,19 @@ class PreloadManager {
     }
     
     // MARK: - Cleanup
+    
+    func refreshPreload(queue: [Track], queueOrder: [Int], from currentIndex: Int) {
+        // Clear cached assets for upcoming tracks so they get re-fetched with fresh URLs
+        let startIndex = currentIndex + 1
+        guard startIndex < queueOrder.count else { return }
+        
+        let endIndex = min(startIndex + lookahead, queueOrder.count)
+        let upcomingIDs = (startIndex..<endIndex).map { queue[queueOrder[$0]].id }
+        
+        for id in upcomingIDs {
+            cachedAssets.removeValue(forKey: id)
+        }
+    }
     
     func evict(before index: Int, queue: [Track], queueOrder: [Int]) {
         guard index > lookbehind else { return }
