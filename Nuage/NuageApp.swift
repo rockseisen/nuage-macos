@@ -150,12 +150,15 @@ struct NuageApp: App {
                 MainView()
                     .frame(minWidth: 600, minHeight: 400)
                     .environmentObject(player)
+                    .environmentObject(player.playbackState)
                     .environmentObject(commandSubjects)
                     .environment(\.showCreatedPlaylists, showCreatedPlaylists)
                     .environment(\.showLikedPlaylists, showLikedPlaylists)
                     .environment(\.playlists, playlists)
                     .environment(\.likes, likes)
                     .environment(\.posts, posts)
+                    .environment(\.playerReference, player)
+                    .environment(\.enqueue, { player.enqueue($0) })
                     .environment(\.toggleLikeTrack, toggleLike)
                     .environment(\.toggleRepostTrack, toggleRepost)
                     .environment(\.toggleLikePlaylist, toggleLike)
@@ -211,7 +214,7 @@ struct NuageApp: App {
     
     @CommandsBuilder private func playbackMenu() -> some Commands {
         CommandMenu("Playback") {
-            let playbackToggleTitle = player.isPlaying ? "Pause" : "Play"
+            let playbackToggleTitle = player.playbackState.isPlaying ? "Pause" : "Play"
             Button(playbackToggleTitle, action: player.togglePlayback)
             
             Divider()

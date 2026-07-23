@@ -10,6 +10,21 @@ import SwiftUI
 import Combine
 import SoundCloud
 
+private struct EnqueueKey: EnvironmentKey {
+    
+    static let defaultValue: ([Track]) -> () = { _ in }
+    
+}
+
+extension EnvironmentValues {
+    
+    var enqueue: ([Track]) -> () {
+        get { self[EnqueueKey.self] }
+        set { self[EnqueueKey.self] = newValue }
+    }
+    
+}
+
 private struct TrackContextMenu: ViewModifier {
     
     @ObservedObject private var soundCloud = SoundCloud.shared
@@ -18,7 +33,7 @@ private struct TrackContextMenu: ViewModifier {
     
     @State private var subscriptions = Set<AnyCancellable>()
     
-    @EnvironmentObject private var player: StreamPlayer
+    @Environment(\.enqueue) private var enqueue: ([Track]) -> ()
     @Environment(\.playlists) private var playlists: [AnyPlaylist]
     @Environment(\.toggleLikeTrack) private var toggleLike: (Track) -> () -> ()
     @Environment(\.toggleRepostTrack) private var toggleRepost: (Track) -> () -> ()
@@ -28,7 +43,7 @@ private struct TrackContextMenu: ViewModifier {
         content.contextMenu {
             Button("Play", action: onPlay)
             Button("Add to Queue") {
-                player.enqueue([track])
+                enqueue([track])
             }
             Divider()
             Button("Go to User") {
