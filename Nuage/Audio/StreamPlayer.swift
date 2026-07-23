@@ -295,6 +295,7 @@ class StreamPlayer: ObservableObject {
     
     func advanceBackward() {
         guard let idx = currentStreamIndex else { return }
+        guard idx > 0 || player.currentTime() >= CMTime(value: 15, timescale: 1) else { return }
         
         if player.currentTime() < CMTime(value: 15, timescale: 1) {
             player.replaceCurrentItem(with: nil)
@@ -306,9 +307,6 @@ class StreamPlayer: ObservableObject {
             // Fall back to scanning backward through the queue
             else if idx > 0 {
                 skipToPreviousPlayable(from: idx)
-            }
-            else {
-                currentStreamIndex = nil
             }
         }
         else {
